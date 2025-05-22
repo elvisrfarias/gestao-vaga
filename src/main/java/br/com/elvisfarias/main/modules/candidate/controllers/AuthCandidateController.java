@@ -1,9 +1,8 @@
-package br.com.elvisfarias.main.modules.company.controllers;
+package br.com.elvisfarias.main.modules.candidate.controllers;
 
-import br.com.elvisfarias.main.modules.company.dto.AuthCompanyDTO;
-import br.com.elvisfarias.main.modules.company.useCases.AuthCompanyUseCase;
+import br.com.elvisfarias.main.modules.candidate.dto.AuthCandidateRequestDTO;
+import br.com.elvisfarias.main.modules.candidate.useCases.AuthCandidateUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,20 +10,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.naming.AuthenticationException;
-
 @RestController
-@RequestMapping("/company")
-public class AuthCompanyController {
+@RequestMapping("/candidate")
+public class AuthCandidateController {
 
     @Autowired
-    private AuthCompanyUseCase authCompanyUseCase;
+    private AuthCandidateUseCase authCandidateUseCase;
 
     @PostMapping("/auth")
-    public ResponseEntity<Object> create(@RequestBody AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
+    public ResponseEntity<Object> auth(@RequestBody AuthCandidateRequestDTO authCandidateResponseDTO) {
         try{
-            var result = this.authCompanyUseCase.execute(authCompanyDTO);
-            return ResponseEntity.ok().body(result);
+            var token = this.authCandidateUseCase.execute(authCandidateResponseDTO);
+            return ResponseEntity.ok().body(token);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
