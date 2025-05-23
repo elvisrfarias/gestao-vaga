@@ -1,5 +1,6 @@
 package br.com.elvisfarias.main.modules.company.useCases;
 
+import br.com.elvisfarias.main.modules.candidate.dto.AuthCandidateResponseDTO;
 import br.com.elvisfarias.main.modules.company.dto.AuthCompanyDTO;
 import br.com.elvisfarias.main.modules.company.repositories.CompanyRepository;
 import com.auth0.jwt.JWT;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.naming.AuthenticationException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 @Service
 public class AuthCompanyUseCase {
@@ -26,7 +28,7 @@ public class AuthCompanyUseCase {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public String execute(AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
+    public AuthCandidateResponseDTO execute(AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
         var company = this.companyRepository.findByUsername(authCompanyDTO.getUsername()).orElseThrow(() -> {
                     throw new UsernameNotFoundException("Usuário não encontrado no banco de dados");
                 });
@@ -40,11 +42,18 @@ public class AuthCompanyUseCase {
 
        //Se for igual --> Gerar o token
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
+        var expiresIn = Instant.now().plus(Duration.ofDays(6));
         var token = JWT.create().withIssuer("javagas")
-                .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
+                .withExpiresAt(expiresIn)
                 .withSubject(company.getId().toString())
+                .withClaim("roles", Arrays.asList("COMPANY"))
                 .sign(algorithm);
 
-        return token;
+        var authCompanyResponseDTO = AuthCandidateResponseDTO.builder()
+                .access_token(token)
+                .expires_in(expiresIn.toEpochMilli())
+                .build();
+
+        return authCompanyResponseDTO;
     }
 }
