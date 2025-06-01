@@ -3,6 +3,8 @@ package br.com.elvisfarias.main.modules.candidate.useCases;
 
 import br.com.elvisfarias.main.exceptions.JobNotFoundException;
 import br.com.elvisfarias.main.exceptions.UserNotFoundException;
+import br.com.elvisfarias.main.modules.candidate.entities.ApplyJobEntity;
+import br.com.elvisfarias.main.modules.candidate.repositoreis.ApplyJobRepository;
 import br.com.elvisfarias.main.modules.candidate.repositoreis.CanditateRepository;
 import br.com.elvisfarias.main.modules.company.repositories.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +21,12 @@ public class ApplyJobCandidateUseCase {
     @Autowired
     private JobRepository jobRepository;
 
+    @Autowired
+    private ApplyJobRepository applyJobRepository;
+
     // Id candidato
     // Id vaga
-    public void execute(UUID idCandidate, UUID idJob) {
+    public ApplyJobEntity execute(UUID idCandidate, UUID idJob) {
 
         this.canditateRepository.findById(idCandidate)
                 .orElseThrow(() -> {
@@ -32,5 +37,14 @@ public class ApplyJobCandidateUseCase {
                 .orElseThrow(() -> {
                     throw new JobNotFoundException();
                 });
+
+        var applyJob = ApplyJobEntity.builder()
+                .candidateId(idCandidate)
+                .jobId(idJob)
+                .build();
+
+        applyJob = applyJobRepository.save(applyJob);
+
+        return applyJob;
     }
 }

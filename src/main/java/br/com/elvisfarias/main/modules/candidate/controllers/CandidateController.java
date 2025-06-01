@@ -1,7 +1,9 @@
 package br.com.elvisfarias.main.modules.candidate.controllers;
 
 import br.com.elvisfarias.main.modules.candidate.dto.ProfileCandidateResponseDTO;
+import br.com.elvisfarias.main.modules.candidate.entities.ApplyJobEntity;
 import br.com.elvisfarias.main.modules.candidate.entities.CandidateEntity;
+import br.com.elvisfarias.main.modules.candidate.useCases.ApplyJobCandidateUseCase;
 import br.com.elvisfarias.main.modules.candidate.useCases.CreateCandidateUseCase;
 import br.com.elvisfarias.main.modules.candidate.useCases.ListAllJobsByFilterUseCase;
 import br.com.elvisfarias.main.modules.candidate.useCases.ProfileCandidateUseCase;
@@ -39,6 +41,9 @@ public class CandidateController {
 
     @Autowired
     private ListAllJobsByFilterUseCase listAllJobsByFilterUseCase;
+
+    @Autowired
+    private ApplyJobCandidateUseCase applyJobCandidateUseCase;
 
     @PostMapping
     @Operation(description = "Essa rota será usada para cadastro de dados.")
@@ -81,4 +86,20 @@ public class CandidateController {
     public List<JobEntity> readJobByFilter(@RequestParam String filter) {
         return this.listAllJobsByFilterUseCase.execute(filter);
     }
+
+    @PostMapping("/job/apply")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @Operation(description = "Inscrição de um candidado para um vaga")
+    public ResponseEntity<Object> applyJob(HttpServletRequest request, @RequestBody UUID idJob) {
+        var idCandidate = request.getAttribute("candidate_id");
+
+        try {
+            var result = this.applyJobCandidateUseCase.execute(UUID.fromString(idCandidate.toString()), idJob);
+
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
+            return  ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
